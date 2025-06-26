@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSVMP Web 示例</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        textarea { width: 100%; height: 200px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 5px; }
+        .output { background: #f4f4f4; padding: 15px; margin: 10px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 JSVMP - JavaScript虚拟机 Web示例</h1>
+    
+    <textarea id="codeEditor" placeholder="输入JavaScript代码...">
+// 闭包和作用域演示 - 多个计数器相互独立
+function createCounter(initialValue) {
+    var count = initialValue || 0;
+    
+    return function() {
+        count++;
+        return count;
+    };
+}
+
+var counter1 = createCounter(10);
+var counter2 = createCounter(100);
+
+var results = [];
+results.push(counter1()); // 11
+results.push(counter1()); // 12
+results.push(counter2()); // 101
+results.push(counter1()); // 13
+results.push(counter2()); // 102
+
+results
+    </textarea>
+    
+    <div>
+        <button onclick="runCode()">▶️ 运行代码</button>
+        <button onclick="clearOutput()">🗑️ 清空</button>
+        <button onclick="loadExample('closure')">🔗 闭包示例</button>
+        <button onclick="loadExample('fibonacci')">📐 斐波那契</button>
+        <button onclick="loadExample('oop')">🏛️ 面向对象</button>
+        <button onclick="loadExample('functional')">⚡ 函数式编程</button>
+        <button onclick="loadExample('external')">📥 外部变量</button>
+    </div>
+    
+    <div class="output" id="output">点击运行代码查看结果...</div>
+
+    <!-- 引入JSVMP库 -->
+    <script src="../dist/jsvmp.js"></script>
+    
+    <script>
+        // 等待页面完全加载后再初始化
+        let vm;
+        
+        // 确保JSVMP库已加载
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                vm = new JSVMP.JSVMP();
+                console.log('JSVMP虚拟机初始化成功');
+            } catch (error) {
+                console.error('JSVMP初始化失败:', error);
+                document.getElementById('output').innerHTML = 
+                    `<strong>❌ 初始化错误:</strong><br>${error.message}`;
+            }
+        });
+        
+        function runCode() {
+            const code = document.getElementById('codeEditor').value;
+            const outputElement = document.getElementById('output');
+            
+            // 检查vm是否已初始化
+            if (!vm) {
+                outputElement.innerHTML = '<strong>⚠️ 警告:</strong><br>虚拟机尚未初始化，请稍等片刻...';
+                outputElement.style.background = '#fff3cd';
+                return;
+            }
+            
+            if (!code.trim()) {
+                outputElement.innerHTML = '<strong>⚠️ 警告:</strong><br>请输入JavaScript代码';
+                outputElement.style.background = '#fff3cd';
+                return;
+            }
+            
+            try {
+                let result;
+                let context = {};
+                
+                // 检查是否是外部变量示例
+                if (code.includes('userName') && code.includes('externalFunction')) {
+                    // 为外部变量示例准备 context
+                    context = {
+                        userName: '小明',
+                        currentDate: new Date().toLocaleDateString('zh-CN'),
+                        userScore: 85,
+                        externalFunction: function(num) {
+                            return num * 2;
+                        },
+                        config: {
+                            theme: 'light',
+                            debug: true
+                        }
+                    };
+                    
+                    outputElement.innerHTML += '<br><strong>📥 传入的外部变量:</strong><br><pre>' + 
+                        JSON.stringify({
+                            userName: context.userName,
+                            currentDate: context.currentDate,
+                            userScore: context.userScore,
+                            'externalFunction': '[Function: 双倍计算]',
+                            config: context.config
+                        }, null, 2) + '</pre><br>';
+                }
+                
+                result = vm.run(code, context);
+                outputElement.innerHTML += `<strong>✅ 执行结果:</strong><br><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                outputElement.style.background = '#e8f5e8';
+            } catch (error) {
+                outputElement.innerHTML = `<strong>❌ 错误:</strong><br>${error.message}`;
+                outputElement.style.background = '#f5e8e8';
+                console.error('执行错误:', error);
+            }
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '输出已清空...';
+            document.getElementById('output').style.background = '#f4f4f4';
+        }
+        
+        function loadExample(type) {
+            const codeEditor = document.getElementById('codeEditor');
+            
+            const examples = {
+                closure: `// 闭包和作用域演示 - 多个计数器相互独立
+function createCounter(initialValue) {
+    var count = initialValue || 0;
+    
+    return function() {
+        count++;
+        return count;
+    };
+}
+
+var counter1 = createCounter(10);
+var counter2 = createCounter(100);
+
+var results = [];
+results.push(counter1()); // 11
+results.push(counter1()); // 12
+results.push(counter2()); // 101
+results.push(counter1()); // 13
+results.push(counter2()); // 102
+
+results`,
+                fibonacci: `// 斐波那契数列演示
+function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+var result = [];
+for (var i = 0; i < 10; i++) {
+    result.push(fibonacci(i));
+}
+result`,
+                oop: `// 面向对象编程演示
+function Person(name, age) {
+    this.name = name;
+    this.age = age;
+    
+    this.greet = function() {
+        return "你好，我是" + this.name + "，今年" + this.age + "岁";
+    };
+    
+    this.celebrateBirthday = function() {
+        this.age++;
+        return this.name + "生日快乐！现在" + this.age + "岁了";
+    };
+}
+
+var person = new Person("小明", 25);
+var greeting = person.greet();
+var birthday = person.celebrateBirthday();
+
+[greeting, birthday, person.age]`,
+                functional: `// 函数式编程演示
+function map(array, fn) {
+    var result = [];
+    for (var i = 0; i < array.length; i++) {
+        result.push(fn(array[i], i));
+    }
+    return result;
+}
+
+function filter(array, fn) {
+    var result = [];
+    for (var i = 0; i < array.length; i++) {
+        if (fn(array[i], i)) {
+            result.push(array[i]);
+        }
+    }
+    return result;
+}
+
+var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// 平方
+var squares = map(numbers, function(x) { return x * x; });
+
+// 过滤偶数
+var evens = filter(numbers, function(x) { return x % 2 === 0; });
+
+({
+    original: numbers,
+    squares: squares,
+    evens: evens
+})`,
+                external: `// 外部变量传入演示
+// 这个示例展示了如何将外部JavaScript变量传入虚拟机
+
+// 在虚拟机中可以直接使用外部传入的变量
+var message = "你好，" + userName + "！";
+message += "\\n今天是：" + currentDate;
+message += "\\n你的分数：" + userScore + " 分";
+
+// 使用外部函数
+var doubled = externalFunction(userScore);
+
+// 使用外部对象
+var configInfo = "主题：" + config.theme + "，调试模式：" + config.debug;
+
+// 创建结果对象
+({
+    personalMessage: message,
+    doubledScore: doubled,
+    configInfo: configInfo,
+    isValid: userScore >= 60
+})`
+            };
+            
+            if (examples[type]) {
+                if (type === 'external') {
+                    // 对于外部变量示例，需要提供特殊处理
+                    codeEditor.value = examples[type];
+                    clearOutput();
+                    // 显示提示信息
+                    const outputElement = document.getElementById('output');
+                    outputElement.innerHTML = '<strong>💡 提示:</strong><br>这个示例需要外部变量。点击"运行代码"时会自动传入示例变量。';
+                    outputElement.style.background = '#e6f3ff';
+                } else {
+                    codeEditor.value = examples[type];
+                    clearOutput();
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

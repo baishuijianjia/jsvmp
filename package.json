@@ -1,0 +1,63 @@
+{
+  "name": "jsvmp",
+  "version": "1.0.0",
+  "description": "A JavaScript Virtual Machine with Stack-based Architecture - Execute JavaScript code in a sandboxed virtual environment",
+  "main": "dist/jsvmp.js",
+  "module": "src/index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "types/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "webpack --mode=production",
+    "build:dev": "webpack --mode=development",
+    "dev": "node examples/basic-usage.js",
+    "test": "node tests/run-tests.js",
+    "test:examples": "node tests/test-examples.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "javascript",
+    "virtual-machine",
+    "vm",
+    "interpreter",
+    "stack-based",
+    "bytecode",
+    "sandbox",
+    "ast",
+    "babel",
+    "compiler",
+    "runtime"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/jsvmp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/jsvmp/issues"
+  },
+  "homepage": "https://github.com/yourusername/jsvmp#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.27.5",
+    "@babel/types": "^7.27.6"
+  },
+  "devDependencies": {
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-obfuscator": "^3.5.1"
+  },
+  "peerDependencies": {
+    "@babel/parser": "^7.20.0",
+    "@babel/types": "^7.20.0"
+  }
+}
